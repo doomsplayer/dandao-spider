@@ -13,17 +13,18 @@ Options:
 """
 import os
 from docopt import docopt
-import models
+from models import *
 from client import Client
 
 
 
-def main(username, password, url):
+def main(username, password, url, arguments):
     client = Client(username, password, url)
     client.login()
-    #resp = client.get("http://bbs.dandao.net/forum.php?mod=viewthread&tid=3993")
-    #print(resp.text)
-
+    client.fetch_all_groups()
+    client.fetch_all_forums()
+    client.fetch_all_threads()
+    client.fetch_all_posts()
 
 
 if __name__ == '__main__':
@@ -31,4 +32,4 @@ if __name__ == '__main__':
     username = arguments.get("--username", os.environ.get("DANDAO_USERNAME"))
     password = arguments.get("--password", os.environ.get("DANDAO_PASSWORD"))
     url = arguments["--url"]
-    main(username, password, url)
+    main(username, password, url, arguments)

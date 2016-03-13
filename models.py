@@ -1,10 +1,16 @@
+"""
+Here defines all the models used by qzz
+"""
 from sqlalchemy import create_engine
-from sqlalchemy import Column, Integer, String, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, Integer, String, ForeignKey, UniqueConstraint, DateTime
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 
-ENGINE = create_engine('sqlite:///:memory:', echo=True)
+ENGINE = create_engine('sqlite:///dandao.db', echo=True)
 Session = sessionmaker(bind=ENGINE)
+
+def create_db():
+    Base.metadata.create_all(ENGINE)
 
 class Base:
     @declared_attr
@@ -18,45 +24,50 @@ class User(Base):
     name = Column(String, unique=True, nullable=False)
 
     def __repr__(self):
-        return "<User(uid={}, name={})>".format(self.uid, self.name)
+        return "<User(uid={}, name={}, posts={})>".format(self.uid, self.name, len(self.posts))
 
-class Grid(Base):
+class Group(Base):
     gid = Column(Integer, primary_key=True)
     name = Column(String, unique=True, nullable=False)
 
     def __repr__(self):
-        return "<Grid(gid={}, name={}, fields={})>".format(self.gid, self.name, self.fields.map(lambda x: x.name))
+        return "<Group(gid={}, name={}, fields={})>".format(self.gid, self.name, self.fields.map(lambda x: x.name))
 
-class Field(Base):
+class Forum(Base):
     fid = Column(Integer, primary_key=True)
     name = Column(String, unique=True, nullable=False)
+    updated_at = Column(DateTime)
 
-    grid_id = Column(Integer, ForeignKey(Grid.gid), nullable=False)
-    grid = relationship(Grid, backref="fields")
+    group_id = Column(Integer, ForeignKey(Group.gid), nullable=False)
+    group = relationship(Group, backref="fields")
 
     def __repr__(self):
-        return "<Field(fid={}, name={}, grid={}, threads={})>".format(self.fid, self.name, self.grid.name, len(self.threads))
+        return "<Field(fid={}, name={}, group={}, threads={})>".format(self.fid, self.name, self.grid.name, len(self.threads))
 
 class Thread(Base):
     tid = Column(Integer, primary_key=True)
-    name = Column(String, unique=True, nullable=False)
+    name = Column(String, nullable=False)
+    created_at = Column(DateTime)
+    updated_at = Column(DateTime)
 
-    field_id = Column(Integer, ForeignKey(Field.fid), nullable=False)
-    field = relationship(Field, backref="threads")
+    forum_id = Column(Integer, ForeignKey(Forum.fid), nullable=False)
+    forum = relationship(Forum, backref="threads")
 
     def __repr__(self):
-        return "<Thread(tid={}, name={}, field={}, layers={})>".format(self.tid, self.name, self.field.name, len(self.layers))
+        return "<Thread(tid={}, name={}, field={}, posts={})>".format(self.tid, self.name, self.field.name, len(self.posts))
 
-class Layer(Base):
-    id = Column(Integer, primary_key=True)
+class Post(Base):
+    pid = Column(Integer, primary_key=True)
     content = Column(String)
+    updated_at = Column(DateTime)
+    created_at = Column(DateTime)
 
     user_id = Column(Integer, ForeignKey(User.uid), nullable=False)
-    user = relationship(User, backref="layers")
+    user = relationship(User, backref="posts")
 
     thread_id = Column(Integer, ForeignKey(Thread.tid), nullable=False)
-    thread = relationship(Thread, backref="layers")
+    thread = relationship(Thread, backref="posts")
 
     def __repr__(self):
-        return "<Layer(id={}, user={}, thread={}, content={})>".format(self.id, self.user.name, self.thread.name, self.content)
+        return "<Post(id={}, user={}, thread={}, content={})>".format(self.id, self.user.name, self.thread.name, self.content)
 

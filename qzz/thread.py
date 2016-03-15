@@ -3,7 +3,7 @@ import regex
 
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import relationship
-from multipledispatch import dispatch
+from multipledispatch import Dispatcher
 from pyquery import PyQuery
 from dateutil.parser import parse as dateparse
 import logging
@@ -12,6 +12,13 @@ from . import Base, DbSession, session_scope
 from .client import Client
 from .forum import Forum
 from .user import User
+
+DISPATCHER = Dispatcher("thread")
+def dispatch(*types):
+    def wrapper(func):
+        DISPATCHER.add(types, func)
+        return DISPATCHER
+    return wrapper
 
 class Thread(Base):
     """The Thread model"""
@@ -34,6 +41,7 @@ class Thread(Base):
         paginator = query.find("#fd_page_bottom > div > label > span").attr("title")
         pages = 1
         if paginator:
+            print("a")
             reg = regex.compile(r"共 (\d+) 页")
             result = reg.findall(paginator)
             pages = int(result[0])

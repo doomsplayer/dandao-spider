@@ -3,7 +3,7 @@ import regex
 
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
-from multipledispatch import dispatch
+from multipledispatch import Dispatcher
 from pyquery import PyQuery
 from dateutil.parser import parse as dateparse
 import logging
@@ -14,6 +14,13 @@ from .thread import Thread
 from .user import User
 from .forum import Forum
 from .group import Group
+
+DISPATCHER = Dispatcher("post")
+def dispatch(*types):
+    def wrapper(func):
+        DISPATCHER.add(types, func)
+        return DISPATCHER
+    return wrapper
 
 class Post(Base):
     """The Post model"""
@@ -37,7 +44,7 @@ class Post(Base):
         pages = 1
         paginator = query.find("#ct > div.pgs.mtm.mbm.cl > div > label > span").attr("title")
         if paginator:
-            reg = regex.compile(r"共 (\d+) 页")
+            reg = regex.compile(r"共 +(\d+) +页")
             result = reg.findall(paginator)
             pages = int(result[0])
         return pages

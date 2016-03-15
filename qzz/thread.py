@@ -87,8 +87,12 @@ class Thread(Base):
                 #replier_username = userq.find("cite>a").text()
                 reply_date = dateparse(user_query.find("em>a").text())
 
-                author = User(uid=author_uid, name=author_username)
-                session.merge(author)
+                if session.query(User).filter(User.uid == author_uid).count() == 0:
+                    author = User(uid=author_uid, name=author_username)
+                    logging.info("adding {}".format(author))
+                    session.add(author)
+                else:
+                    author = session.query(User).filter(User.uid == author_uid).one()
 
                 existence = session.query(Thread).filter(Thread.tid == tid)
                 if existence.count() == 0:

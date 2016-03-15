@@ -93,10 +93,12 @@ class Post(Base):
                     edit_time = content_query.find("i.pstatus").text()
                     update_date = dateparse(reg_update.findall(edit_time)[0])
 
-                author = User(uid=author_uid, name=author_username)
-                logging.info("Merging {}".format(author))
-                session.merge(author)
-
+                if session.query(User).filter(User.uid == author_uid).count() == 0:
+                    author = User(uid=author_uid, name=author_username)
+                    logging.info("adding {}".format(author))
+                    session.add(author)
+                else:
+                    author = session.query(User).filter(User.uid == author_uid).one()
 
                 post = Post(pid=pid, content=content, created_at=auth_date, updated_at=update_date, user=author, thread=thread)
                 logging.info("Merging {}".format(post))

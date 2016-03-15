@@ -54,8 +54,9 @@ class Thread(Base):
 
         reg_uid = regex.compile(r"^home\.php\?mod=space&uid=(\d+)$")
         reg_tid = regex.compile(r"^normalthread_(\d+)$")
-
-        for i in range(1, Thread.pages(query)+1):
+        pages = Thread.pages(query)
+        logging.info("Total {} pages for {}".format(pages, forum))
+        for i in range(1, pages+1):
             logging.info("Fetching {} page {}".format(forum, i))
             query = Thread.thread_page(client, forum.fid, i).find("#threadlisttableid")
 

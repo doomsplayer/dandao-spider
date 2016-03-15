@@ -29,7 +29,7 @@ class Post(Base):
     thread = relationship(Thread, backref="posts")
 
     def __repr__(self):
-        return "<Post(id={}, user={}, thread={}, content={})>".format(self.id, self.user.name, self.thread.name, self.content)
+        return "<Post(pid={}, user={}, thread={}, content={})>".format(self.pid, self.user.name, self.thread.name, self.content)
 
     @staticmethod
     @dispatch(PyQuery)
@@ -58,7 +58,9 @@ class Post(Base):
         reg_uid = regex.compile(r"^home\.php\?mod=space&uid=(\d+)$")
         reg_pid = regex.compile(r"^post_(\d+)$")
         reg_update = regex.compile(r"本帖最后由 .*? 于 (.+) 编辑")
-        for i in range(1, Post.pages(query)+1):
+        pages = Post.pages(query)
+        logging.info("Total {} pages for {}".format(pages, thread))
+        for i in range(1, pages+1):
             logging.info("Fetching {} page {}".format(thread, i))
             query = Post.post_page(client, thread.tid, i).find("#postlist")
 

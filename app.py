@@ -20,8 +20,8 @@ def main(username, password, url, arguments):
     logging.basicConfig(level=logging.INFO)
     client = Client(url)
     client.login(username, password)
-    #Group.update_groups(client)
-    #Forum.update_forums(client)
+    Group.update_groups(client)
+    Forum.update_forums(client)
     Thread.update_threads(client)
     Post.update_posts(client)
 

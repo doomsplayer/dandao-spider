@@ -13,18 +13,17 @@ Options:
 """
 import os
 from docopt import docopt
-from models import *
-from client import Client
-
-
+from qzz import Client, Group, Forum, Thread, Post
+import logging
 
 def main(username, password, url, arguments):
-    client = Client(username, password, url)
-    client.login()
-    client.fetch_all_groups()
-    client.fetch_all_forums()
-    client.fetch_all_threads()
-    client.fetch_all_posts()
+    logging.basicConfig(level=logging.INFO)
+    client = Client(url)
+    client.login(username, password)
+    #Group.update_groups(client)
+    #Forum.update_forums(client)
+    Thread.update_threads(client)
+    Post.update_posts(client)
 
 
 if __name__ == '__main__':
